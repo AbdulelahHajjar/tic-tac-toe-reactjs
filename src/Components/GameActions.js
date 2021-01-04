@@ -24,18 +24,22 @@ function GameActions() {
 	};
 
 	const createGame = () => {
-		const boardCode = generateGameCode();
+		const gameCode = generateGameCode();
 		firebase
 			.firestore()
-			.collection("boards")
+			.collection("games")
 			.add({
-				code: boardCode,
+				code: gameCode,
 				x: uid,
 				turn: uid,
-				squares: Array(9).fill(null),
+				board: Array(9).fill(null),
 			})
 			.then(() => {
-				history.push(`/board?code=${boardCode}`);
+				const location = {
+					pathname: `game?code=${gameCode}`,
+					state: { uid },
+				};
+				history.push(location);
 			});
 	};
 

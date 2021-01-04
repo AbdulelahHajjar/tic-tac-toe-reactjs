@@ -6,24 +6,28 @@ import firebase from "firebase/app";
 import { v4 as uuidv4 } from "uuid";
 
 function JoinGame() {
-	const [boardCode, setBoardCode] = useState("");
+	const [gameCode, setGameCode] = useState("");
 	const history = useHistory();
 	const [uid, setUid] = useState(uuidv4());
 
-	function openBoardWithCode() {
-		const boardsRef = firebase.firestore().collection("boards");
+	function openGameWithCode() {
+		const gamesRef = firebase.firestore().collection("games");
 
-		boardsRef
-			.where("code", "==", boardCode)
+		gamesRef
+			.where("code", "==", gameCode)
 			.get()
 			.then((querySnapshot) => {
 				const exists = querySnapshot.docs[0].exists;
 				if (exists) {
-					boardsRef
+					gamesRef
 						.doc(querySnapshot.docs[0].id)
 						.update({ o: uid })
 						.then(() => {
-							history.push(`board?code=${boardCode}`);
+							const location = {
+								pathname: `game?code=${gameCode}`,
+								state: { uid },
+							};
+							history.push(location);
 						});
 				} else {
 					// todo display error
@@ -31,8 +35,8 @@ function JoinGame() {
 			});
 	}
 
-	const _setBoardCode = (e) => {
-		setBoardCode(e.target.value);
+	const _setGameCode = (e) => {
+		setGameCode(e.target.value);
 	};
 
 	return (
@@ -46,11 +50,11 @@ function JoinGame() {
 				type="text"
 				placeholder="Enter game code..."
 				style={textFieldStyle}
-				onChange={_setBoardCode}
+				onChange={_setGameCode}
 			/>
 
 			<br />
-			<button style={buttonStyle()} onClick={openBoardWithCode}>
+			<button style={buttonStyle()} onClick={openGameWithCode}>
 				Join Game
 			</button>
 		</div>

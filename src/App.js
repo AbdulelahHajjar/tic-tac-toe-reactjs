@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import Home from "./Pages/Home.js";
 import StartGame from "./Pages/StartGame";
 import JoinGame from "./Pages/JoinGame";
-import Board from "./Pages/Board";
+import Game from "./Pages/Game";
 import firebase from "firebase/app";
 import "firebase/firestore";
 
@@ -26,7 +26,7 @@ function App() {
 		<Router>
 			<Route exact path="/" component={Home} />
 			<Route exact path="/joinGame" component={JoinGame} />
-			<Route path="/board" component={Board} />
+			<Route path="/game" component={Game} />
 		</Router>
 	);
 }
