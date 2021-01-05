@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import Square from "../Components/Square";
+import GameObject from "../Models/GameObject";
 
 var listener = null;
 
@@ -38,6 +39,7 @@ function Game(props) {
 						gameDoc.data().currentPlayer,
 						gameDoc.data().board
 					);
+					// TODO: Prevent setting game when a player is missing
 					setGame(gameObj);
 				} else {
 					//TODO: Display error (implement catch method if possible)
@@ -47,17 +49,14 @@ function Game(props) {
 
 	const makePlay = (index) => {
 		// TODO: Implement better id technique
-		if (game.currentPlayerId() !== props.location.state.uid) return;
-		// TODO: Implement not making a move when square is filled
-		// TODO: Implement not making a move when there is a winner
-		// TODO: check if player string is null
-		game.makeMove(index);
+		if (!game.canMakeMove(props.location.state.uid, index)) return;
 
+		game.makeMove(index);
 		if (game.existsWinner()) {
 			console.log(game.currentPlayer + " Won!!!");
 			// TODO: Display prompt
 		}
-		console.log(game.board, "***", game.nextPlayer());
+
 		firebase
 			.firestore()
 			.collection("games")
@@ -65,6 +64,7 @@ function Game(props) {
 			.update({ board: game.board, currentPlayer: game.nextPlayer() });
 	};
 
+	// TODO: Fix blank screen on first launch of this page
 	if (game != null) {
 		return (
 			<div style={{ width: "600px" }}>
@@ -99,78 +99,3 @@ const containerStyle = {
 };
 
 export default Game;
-
-class GameObject {
-	constructor(id, code, x, o, currentPlayer, board) {
-		this.id = id;
-		this.code = code;
-		this.x = x;
-		this.o = o;
-		this.currentPlayer = currentPlayer;
-		this.board = board;
-	}
-
-	getPlayerString(uid) {
-		return uid === this.x ? "x" : "o";
-	}
-
-	currentPlayerId() {
-		return this.currentPlayer === "x" ? this.x : this.o;
-	}
-
-	makeMove(index) {
-		this.board[index] = this.currentPlayer;
-	}
-
-	nextPlayer() {
-		return this.currentPlayer === "x" ? "o" : "x";
-	}
-
-	existsWinner() {
-		const lines = [
-			[0, 1, 2],
-			[3, 4, 5],
-			[6, 7, 8],
-			[0, 3, 6],
-			[1, 4, 7],
-			[2, 5, 8],
-			[0, 4, 8],
-			[2, 4, 6],
-		];
-
-		for (let i = 0; i < lines.length; i++) {
-			const [a, b, c] = lines[i];
-			if (
-				this.board[a] &&
-				this.board[a] === this.board[b] &&
-				this.board[a] === this.board[c]
-			) {
-				return this.board[a];
-			}
-		}
-		return null;
-	}
-}
-
-const gameConverter = {
-	toFirestore: function (game) {
-		return {
-			code: game.code,
-			x: game.x,
-			o: game.o,
-			currentPlayer: game.currentPlayer,
-			board: game.board,
-		};
-	},
-	fromFirestore: function (snapshot, options) {
-		const data = snapshot.data(options);
-		return new GameObject(
-			data.id,
-			data.code,
-			data.x,
-			data.y,
-			data.currentPlayer,
-			data.board
-		);
-	},
-};
