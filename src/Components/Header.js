@@ -1,5 +1,3 @@
-import GameActions from "./GameActions";
-
 function Header(props) {
 	return (
 		<div style={{}}>

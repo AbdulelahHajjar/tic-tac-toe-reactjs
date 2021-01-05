@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Header from "../Components/Header";
-import GameActions from "../Components/GameActions";
 import { useHistory } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import "firebase/firestore";
@@ -32,7 +31,7 @@ function Home() {
 			.add({
 				code: gameCode,
 				x: uid,
-				turn: uid,
+				currentPlayer: "x",
 				board: Array(9).fill(null),
 			})
 			.then(() => {

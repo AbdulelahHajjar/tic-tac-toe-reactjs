@@ -16,68 +16,53 @@ function Game(props) {
 
 	const query = useQuery();
 	const code = query.get("code");
-	var [gameId, setGameId] = useState(null);
 
 	useEffect(() => {
+		attachGameListener();
+	}, []);
+
+	const attachGameListener = () => {
 		if (listener) return;
 		listener = firebase
 			.firestore()
 			.collection("games")
 			.where("code", "==", code)
-			.onSnapshot((documentSnapshot) => {
-				//TODO: check if game exists.
-				setGame(documentSnapshot.docs[0].data());
-				setGameId(documentSnapshot.docs[0].id);
+			.onSnapshot((querySnapshot) => {
+				if (querySnapshot != null && querySnapshot.size > 0) {
+					let gameDoc = querySnapshot.docs[0];
+					let gameObj = new GameObject(
+						gameDoc.id,
+						gameDoc.data().code,
+						gameDoc.data().x,
+						gameDoc.data().o,
+						gameDoc.data().currentPlayer,
+						gameDoc.data().board
+					);
+					setGame(gameObj);
+				} else {
+					//TODO: Display error (implement catch method if possible)
+				}
 			});
-	}, []);
+	};
 
 	const makePlay = (index) => {
-		if (game.turn != props.location.state.uid) return;
+		// TODO: Implement better id technique
+		if (game.currentPlayerId() !== props.location.state.uid) return;
+		// TODO: Implement not making a move when square is filled
+		// TODO: Implement not making a move when there is a winner
 		// TODO: check if player string is null
-		game.board[index] = getPlayerString(props.location.state.uid);
+		game.makeMove(index);
 
-		let didWin = checkWinner();
-
-		if (didWin) {
-			console.log(getPlayerString(props.location.state.uid) + " Won!!!");
+		if (game.existsWinner()) {
+			console.log(game.currentPlayer + " Won!!!");
+			// TODO: Display prompt
 		}
-
-		let nextPlayer = game.x === props.location.state.uid ? game.o : game.x;
-
+		console.log(game.board, "***", game.nextPlayer());
 		firebase
 			.firestore()
 			.collection("games")
-			.doc(gameId)
-			.update({ board: game.board, turn: nextPlayer });
-	};
-
-	const checkWinner = () => {
-		const lines = [
-			[0, 1, 2],
-			[3, 4, 5],
-			[6, 7, 8],
-			[0, 3, 6],
-			[1, 4, 7],
-			[2, 5, 8],
-			[0, 4, 8],
-			[2, 4, 6],
-		];
-
-		for (let i = 0; i < lines.length; i++) {
-			const [a, b, c] = lines[i];
-			if (
-				game.board[a] &&
-				game.board[a] === game.board[b] &&
-				game.board[a] === game.board[c]
-			) {
-				return game.board[a];
-			}
-		}
-		return null;
-	};
-
-	const getPlayerString = (uid) => {
-		return uid === game.x ? "X" : "O";
+			.doc(game.id)
+			.update({ board: game.board, currentPlayer: game.nextPlayer() });
 	};
 
 	if (game != null) {
@@ -114,3 +99,78 @@ const containerStyle = {
 };
 
 export default Game;
+
+class GameObject {
+	constructor(id, code, x, o, currentPlayer, board) {
+		this.id = id;
+		this.code = code;
+		this.x = x;
+		this.o = o;
+		this.currentPlayer = currentPlayer;
+		this.board = board;
+	}
+
+	getPlayerString(uid) {
+		return uid === this.x ? "x" : "o";
+	}
+
+	currentPlayerId() {
+		return this.currentPlayer === "x" ? this.x : this.o;
+	}
+
+	makeMove(index) {
+		this.board[index] = this.currentPlayer;
+	}
+
+	nextPlayer() {
+		return this.currentPlayer === "x" ? "o" : "x";
+	}
+
+	existsWinner() {
+		const lines = [
+			[0, 1, 2],
+			[3, 4, 5],
+			[6, 7, 8],
+			[0, 3, 6],
+			[1, 4, 7],
+			[2, 5, 8],
+			[0, 4, 8],
+			[2, 4, 6],
+		];
+
+		for (let i = 0; i < lines.length; i++) {
+			const [a, b, c] = lines[i];
+			if (
+				this.board[a] &&
+				this.board[a] === this.board[b] &&
+				this.board[a] === this.board[c]
+			) {
+				return this.board[a];
+			}
+		}
+		return null;
+	}
+}
+
+const gameConverter = {
+	toFirestore: function (game) {
+		return {
+			code: game.code,
+			x: game.x,
+			o: game.o,
+			currentPlayer: game.currentPlayer,
+			board: game.board,
+		};
+	},
+	fromFirestore: function (snapshot, options) {
+		const data = snapshot.data(options);
+		return new GameObject(
+			data.id,
+			data.code,
+			data.x,
+			data.y,
+			data.currentPlayer,
+			data.board
+		);
+	},
+};
