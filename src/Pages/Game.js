@@ -34,7 +34,7 @@ function Game(props) {
 	const makePlay = (index) => {
 		if (game.turn != props.location.state.uid) return;
 		// TODO: check if player string is null
-		game.squares[index] = getPlayerString(props.location.state.uid);
+		game.board[index] = getPlayerString(props.location.state.uid);
 
 		let didWin = checkWinner();
 
@@ -42,13 +42,13 @@ function Game(props) {
 			console.log(getPlayerString(props.location.state.uid) + " Won!!!");
 		}
 
-		let nextPlayer = game.x == props.location.state.uid ? game.o : game.x;
+		let nextPlayer = game.x === props.location.state.uid ? game.o : game.x;
 
 		firebase
 			.firestore()
 			.collection("games")
 			.doc(gameId)
-			.update({ squares: game.squares, turn: nextPlayer });
+			.update({ board: game.board, turn: nextPlayer });
 	};
 
 	const checkWinner = () => {
