@@ -18,9 +18,13 @@ function Game(props) {
 	const query = useQuery();
 	const code = query.get("code");
 
-	useEffect(() => {
-		attachGameListener();
-	}, []);
+	useEffect(
+		() => {
+			attachGameListener();
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[] /*<-Understand this issue*/
+	);
 
 	const attachGameListener = () => {
 		if (listener) return;
