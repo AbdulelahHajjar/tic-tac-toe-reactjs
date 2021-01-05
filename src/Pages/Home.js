@@ -1,46 +1,31 @@
-import React, { useState } from "react";
+import React from "react";
 import Header from "../Components/Header";
 import { useHistory } from "react-router-dom";
-import { v4 as uuidv4 } from "uuid";
 import "firebase/firestore";
 import firebase from "firebase/app";
 import { Link } from "react-router-dom";
+import { gameConverter, createGameObject } from "../Models/GameObject.js";
 
 function Home() {
 	const history = useHistory();
-	const [uid, setUid] = useState(uuidv4());
+	const gamesRef = firebase.firestore().collection("games");
 
 	// TODO: Implement collision checking
-	const generateGameCode = () => {
-		var result = "";
-		var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-		var charactersLength = characters.length;
-		for (var i = 0; i < 6; i++) {
-			result += characters.charAt(
-				Math.floor(Math.random() * charactersLength)
-			);
-		}
-		return result;
+	const createGame = () => {
+		let newGame = createGameObject();
+		gamesRef
+			.withConverter(gameConverter)
+			.add(newGame)
+			.then(() => {
+				redirectToGame(newGame.code);
+			});
 	};
 
-	const createGame = () => {
-		const gameCode = generateGameCode();
-		firebase
-			.firestore()
-			.collection("games")
-			.add({
-				code: gameCode,
-				x: uid,
-				currentPlayer: "x",
-				board: Array(9).fill(null),
-			})
-			.then(() => {
-				const location = {
-					pathname: `game?code=${gameCode}`,
-					state: { uid },
-				};
-				history.push(location);
-			});
+	const redirectToGame = (gameCode) => {
+		const location = {
+			pathname: `game?code=${gameCode}`,
+		};
+		history.push(location);
 	};
 
 	return (

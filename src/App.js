@@ -2,7 +2,6 @@ import "./App.css";
 import React from "react";
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import Home from "./Pages/Home.js";
-import StartGame from "./Pages/StartGame";
 import JoinGame from "./Pages/JoinGame";
 import Game from "./Pages/Game";
 import firebase from "firebase/app";

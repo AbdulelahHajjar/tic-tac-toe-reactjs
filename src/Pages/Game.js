@@ -4,19 +4,21 @@ import { useEffect, useState } from "react";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import Square from "../Components/Square";
-import GameObject from "../Models/GameObject";
+import { gameConverter } from "../Models/GameObject";
+import { v4 as uuidv4 } from "uuid";
 
 var listener = null;
 
 function Game(props) {
+	const gamesRef = firebase.firestore().collection("games");
 	const [game, setGame] = useState(null);
+	const uid = uuidv4();
 
 	function useQuery() {
 		return new URLSearchParams(useLocation().search);
 	}
 
-	const query = useQuery();
-	const code = query.get("code");
+	const code = useQuery().get("code");
 
 	useEffect(
 		() => {
@@ -28,21 +30,15 @@ function Game(props) {
 
 	const attachGameListener = () => {
 		if (listener) return;
-		listener = firebase
-			.firestore()
-			.collection("games")
+		listener = gamesRef
 			.where("code", "==", code)
 			.onSnapshot((querySnapshot) => {
 				if (querySnapshot != null && querySnapshot.size > 0) {
-					let gameDoc = querySnapshot.docs[0];
-					let gameObj = new GameObject(
-						gameDoc.id,
-						gameDoc.data().code,
-						gameDoc.data().x,
-						gameDoc.data().o,
-						gameDoc.data().currentPlayer,
-						gameDoc.data().board
+					let gameObj = gameConverter.fromFirestore(
+						querySnapshot.docs[0],
+						querySnapshot.docs[0].options
 					);
+
 					// TODO: Prevent setting game when a player is missing
 					setGame(gameObj);
 				} else {
@@ -53,7 +49,8 @@ function Game(props) {
 
 	const makePlay = (index) => {
 		// TODO: Implement better id technique
-		if (!game.canMakeMove(props.location.state.uid, index)) return;
+		// FIXME: no uid in state anymore
+		if (!game.canMakeMove(uid, index)) return;
 
 		game.makeMove(index);
 		if (game.existsWinner()) {
@@ -61,9 +58,7 @@ function Game(props) {
 			// TODO: Display prompt
 		}
 
-		firebase
-			.firestore()
-			.collection("games")
+		gamesRef
 			.doc(game.id)
 			.update({ board: game.board, currentPlayer: game.nextPlayer() });
 	};

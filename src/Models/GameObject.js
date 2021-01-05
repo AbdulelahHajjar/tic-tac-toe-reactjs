@@ -54,3 +54,49 @@ class GameObject {
 		return null;
 	}
 }
+
+export const gameConverter = {
+	toFirestore: function (game) {
+		return {
+			code: game.code,
+			x: game.x,
+			o: game.o,
+			currentPlayer: game.currentPlayer,
+			board: game.board,
+		};
+	},
+	fromFirestore: function (snapshot, options) {
+		const data = snapshot.data(options);
+		return new GameObject(
+			data.id,
+			data.code,
+			data.x,
+			data.y,
+			data.currentPlayer,
+			data.board
+		);
+	},
+};
+
+export function createGameObject() {
+	return new GameObject(
+		null,
+		generateGameCode(),
+		null,
+		null,
+		"x",
+		Array(9).fill(null)
+	);
+}
+
+function generateGameCode() {
+	var result = "";
+	var characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+	var charactersLength = characters.length;
+	for (var i = 0; i < 6; i++) {
+		result += characters.charAt(
+			Math.floor(Math.random() * charactersLength)
+		);
+	}
+	return result;
+}

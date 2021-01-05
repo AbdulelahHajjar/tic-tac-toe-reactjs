@@ -3,40 +3,42 @@ import { useState } from "react";
 import Header from "../Components/Header";
 import "firebase/firestore";
 import firebase from "firebase/app";
-import { v4 as uuidv4 } from "uuid";
 
 function JoinGame() {
-	const [gameCode, setGameCode] = useState("");
 	const history = useHistory();
-	const [uid, setUid] = useState(uuidv4());
+	const gamesRef = firebase.firestore().collection("games");
+
+	const [gameCode, setGameCode] = useState("");
 
 	function openGameWithCode() {
-		const gamesRef = firebase.firestore().collection("games");
-
 		gamesRef
 			.where("code", "==", gameCode)
 			.get()
 			.then((querySnapshot) => {
-				const exists = querySnapshot.docs[0].exists;
-				if (exists) {
-					gamesRef
-						.doc(querySnapshot.docs[0].id)
-						.update({ o: uid })
-						.then(() => {
-							const location = {
-								pathname: `game?code=${gameCode}`,
-								state: { uid },
-							};
-							history.push(location);
-						});
+				if (
+					querySnapshot != null &&
+					querySnapshot.size > 0 &&
+					querySnapshot.docs[0] != null &&
+					querySnapshot.docs[0].exists
+					/* // TODO: && either x or o is null. */
+				) {
+					redirectToGame(gameCode);
 				} else {
-					// todo display error
+					// TODO: display error
 				}
 			});
 	}
 
-	const _setGameCode = (e) => {
+	const onGameCodeChange = (e) => {
 		setGameCode(e.target.value);
+	};
+
+	// TODO: redundant code
+	const redirectToGame = (gameCode) => {
+		const location = {
+			pathname: `game?code=${gameCode}`,
+		};
+		history.push(location);
 	};
 
 	return (
@@ -50,7 +52,7 @@ function JoinGame() {
 				type="text"
 				placeholder="Enter game code..."
 				style={textFieldStyle}
-				onChange={_setGameCode}
+				onChange={onGameCodeChange}
 			/>
 
 			<br />
