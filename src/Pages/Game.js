@@ -30,48 +30,28 @@ function Game() {
 	const code = useQuery().get("code");
 
 	const attachGameListener = () => {
+		// TODO: firestore sequrity rules
 		if (listener) return;
-		listener = gamesRef
-			.where("code", "==", code)
-			.where("winner", "==", null)
-			.onSnapshot((querySnapshot) => {
-				if (querySnapshot != null && querySnapshot.size > 0) {
-					let doc = querySnapshot.docs[0];
-					let gameObj = new GameObject(
-						doc.id,
-						doc.data().code,
-						doc.data().x,
-						doc.data().o,
-						doc.data().currentPlayer,
-						doc.data().winner,
-						doc.data().board
-					);
+		listener = gamesRef.where("code", "==", code);
+		if (game == null) listener.where("winner", "==", null);
 
-					if (gameObj.isContestant(uid)) {
-						if (gameObj.x == null || gameObj.o == null) {
-							setPrompt("Waiting for other contestant...");
-						} else {
-							if (gameObj.winner) {
-								setPrompt(gameObj.winner + " Won!!!");
-							} else {
-								setPrompt(null);
-							}
-							setGame(gameObj);
-							setError(null);
-						}
-					} else if (gameObj.newContestantCanJoin()) {
-						gameObj.addContestant(uid);
-						gamesRef
-							.doc(gameObj.id)
-							.withConverter(gameConverter)
-							.set(gameObj);
-					} else {
-						setError("Error: full lobby.");
-					}
-				} else {
-					setError("Error: cannot get game.");
-				}
-			});
+		listener.onSnapshot((querySnapshot) => {
+			if (querySnapshot != null && querySnapshot.size > 0) {
+				let doc = querySnapshot.docs[0];
+				let gameObj = new GameObject(
+					doc.id,
+					doc.data().code,
+					doc.data().x,
+					doc.data().o,
+					doc.data().currentPlayer,
+					doc.data().winner,
+					doc.data().board
+				);
+				setUpGame(gameObj);
+			} else {
+				setError("Error: cannot get game.");
+			}
+		});
 	};
 
 	useEffect(
@@ -81,6 +61,23 @@ function Game() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 		[] /*<-Understand this issue*/
 	);
+
+	const setUpGame = (gameObj) => {
+		if (gameObj.isContestant(uid)) {
+			if (gameObj.x == null || gameObj.o == null) {
+				setPrompt("Waiting for other contestant...");
+			} else {
+				setPrompt(gameObj.winner ? gameObj.winner + " Won!!!" : null);
+				setGame(gameObj);
+				setError(null);
+			}
+		} else if (gameObj.newContestantCanJoin()) {
+			gameObj.addContestant(uid);
+			gamesRef.doc(gameObj.id).withConverter(gameConverter).set(gameObj);
+		} else {
+			setError("Error: full lobby.");
+		}
+	};
 
 	const makePlay = (index) => {
 		if (!game.canMakeMove(uid, index)) return;

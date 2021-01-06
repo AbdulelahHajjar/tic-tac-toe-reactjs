@@ -69,6 +69,18 @@ export default class GameObject {
 		}
 		return null;
 	}
+
+	static create() {
+		return new GameObject(
+			null,
+			generateGameCode(),
+			null,
+			null,
+			"x",
+			null,
+			Array(9).fill(null)
+		);
+	}
 }
 
 export const gameConverter = {
@@ -84,7 +96,6 @@ export const gameConverter = {
 	},
 	fromFirestore: function (snapshot, options) {
 		const data = snapshot.data(options);
-		console.log(data.id);
 
 		return new GameObject(
 			data.id || null,
@@ -97,18 +108,6 @@ export const gameConverter = {
 		);
 	},
 };
-
-export function createGameObject() {
-	return new GameObject(
-		null,
-		generateGameCode(),
-		null,
-		null,
-		"x",
-		null,
-		Array(9).fill(null)
-	);
-}
 
 function generateGameCode() {
 	var result = "";

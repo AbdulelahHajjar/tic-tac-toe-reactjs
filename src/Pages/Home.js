@@ -4,14 +4,15 @@ import { useHistory } from "react-router-dom";
 import "firebase/firestore";
 import firebase from "firebase/app";
 import { Link } from "react-router-dom";
-import { gameConverter, createGameObject } from "../Models/GameObject.js";
+import GameObject, { gameConverter } from "../Models/GameObject.js";
 
 function Home() {
 	const history = useHistory();
 	const gamesRef = firebase.firestore().collection("games");
 
 	const createGame = () => {
-		let newGame = createGameObject();
+		// TODO: Implement security (multiple game creations... maybe captcha, maybe prevent multiple games in a set period of time)
+		let newGame = GameObject.create();
 		gamesRef
 			.withConverter(gameConverter)
 			.add(newGame)
