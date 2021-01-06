@@ -8,18 +8,20 @@ import GameObject, { gameConverter } from "../Models/GameObject";
 import { v4 as uuidv4 } from "uuid";
 
 var listener = null;
+const uid = uuidv4();
 
 function Game() {
 	const gamesRef = firebase.firestore().collection("games");
 	const [game, setGame] = useState(null);
 	const [error, setError] = useState("");
 	const [prompt, setPrompt] = useState("");
-	var uid = localStorage.getItem("uid");
 
-	if (uid == null) {
-		uid = uuidv4();
-		localStorage.setItem("uid", uid);
-	}
+	// var uid = localStorage.getItem("uid");
+
+	// if (uid == null) {
+	// 	uid = uuidv4();
+	// 	localStorage.setItem("uid", uid);
+	// }
 
 	const useQuery = () => {
 		return new URLSearchParams(useLocation().search);
@@ -31,6 +33,7 @@ function Game() {
 		if (listener) return;
 		listener = gamesRef
 			.where("code", "==", code)
+			.where("winner", "==", null)
 			.onSnapshot((querySnapshot) => {
 				if (querySnapshot != null && querySnapshot.size > 0) {
 					let doc = querySnapshot.docs[0];
@@ -40,6 +43,7 @@ function Game() {
 						doc.data().x,
 						doc.data().o,
 						doc.data().currentPlayer,
+						doc.data().winner,
 						doc.data().board
 					);
 
@@ -47,8 +51,12 @@ function Game() {
 						if (gameObj.x == null || gameObj.o == null) {
 							setPrompt("Waiting for other contestant...");
 						} else {
+							if (gameObj.winner) {
+								setPrompt(gameObj.winner + " Won!!!");
+							} else {
+								setPrompt(null);
+							}
 							setGame(gameObj);
-							setPrompt(null);
 							setError(null);
 						}
 					} else if (gameObj.newContestantCanJoin()) {
@@ -76,15 +84,8 @@ function Game() {
 
 	const makePlay = (index) => {
 		if (!game.canMakeMove(uid, index)) return;
-
 		game.makeMove(index);
-		if (game.existsWinner()) {
-			setPrompt(game.currentPlayer + " Won!!!");
-		}
-
-		gamesRef
-			.doc(game.id)
-			.update({ board: game.board, currentPlayer: game.nextPlayer() });
+		gamesRef.doc(game.id).withConverter(gameConverter).set(game);
 	};
 
 	// TODO: Fix blank screen on first launch of this page

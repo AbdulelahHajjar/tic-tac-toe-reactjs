@@ -1,11 +1,12 @@
 // eslint-disable-next-line no-unused-vars
 export default class GameObject {
-	constructor(id, code, x, o, currentPlayer, board) {
+	constructor(id, code, x, o, currentPlayer, winner, board) {
 		this.id = id;
 		this.code = code;
 		this.x = x;
 		this.o = o;
 		this.currentPlayer = currentPlayer;
+		this.winner = winner;
 		this.board = board;
 	}
 
@@ -23,6 +24,8 @@ export default class GameObject {
 
 	makeMove(index) {
 		this.board[index] = this.currentPlayer;
+		if (this.existsWinner()) this.winner = this.currentPlayer;
+		else this.currentPlayer = this.nextPlayer();
 	}
 
 	nextPlayer() {
@@ -75,6 +78,7 @@ export const gameConverter = {
 			x: game.x,
 			o: game.o,
 			currentPlayer: game.currentPlayer,
+			winner: game.winner,
 			board: game.board,
 		};
 	},
@@ -88,6 +92,7 @@ export const gameConverter = {
 			data.x || null,
 			data.y || null,
 			data.currentPlayer || null,
+			data.winner || null,
 			data.board || null
 		);
 	},
@@ -100,6 +105,7 @@ export function createGameObject() {
 		null,
 		null,
 		"x",
+		null,
 		Array(9).fill(null)
 	);
 }

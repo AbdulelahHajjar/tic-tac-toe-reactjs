@@ -13,6 +13,7 @@ function JoinGame() {
 	function openGameWithCode() {
 		gamesRef
 			.where("code", "==", gameCode)
+			.where("winner", "==", null)
 			.get()
 			.then((querySnapshot) => {
 				// TODO: and (x or o equal to null)
