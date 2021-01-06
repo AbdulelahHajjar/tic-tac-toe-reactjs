@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-class GameObject {
+export default class GameObject {
 	constructor(id, code, x, o, currentPlayer, board) {
 		this.id = id;
 		this.code = code;
@@ -27,6 +27,19 @@ class GameObject {
 
 	nextPlayer() {
 		return this.currentPlayer === "x" ? "o" : "x";
+	}
+
+	isContestant(uid) {
+		return this.x === uid || this.o === uid;
+	}
+
+	newContestantCanJoin() {
+		return this.x == null || this.o == null;
+	}
+
+	addContestant(uid) {
+		if (this.x == null) this.x = uid;
+		else if (this.o == null) this.o = uid;
 	}
 
 	existsWinner() {
@@ -67,13 +80,15 @@ export const gameConverter = {
 	},
 	fromFirestore: function (snapshot, options) {
 		const data = snapshot.data(options);
+		console.log(data.id);
+
 		return new GameObject(
-			data.id,
-			data.code,
-			data.x,
-			data.y,
-			data.currentPlayer,
-			data.board
+			data.id || null,
+			data.code || null,
+			data.x || null,
+			data.y || null,
+			data.currentPlayer || null,
+			data.board || null
 		);
 	},
 };

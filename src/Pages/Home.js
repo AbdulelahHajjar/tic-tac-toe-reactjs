@@ -10,22 +10,19 @@ function Home() {
 	const history = useHistory();
 	const gamesRef = firebase.firestore().collection("games");
 
-	// TODO: Implement collision checking
 	const createGame = () => {
 		let newGame = createGameObject();
 		gamesRef
 			.withConverter(gameConverter)
 			.add(newGame)
 			.then(() => {
+				// TODO: Implement collision checking
 				redirectToGame(newGame.code);
 			});
 	};
 
 	const redirectToGame = (gameCode) => {
-		const location = {
-			pathname: `game?code=${gameCode}`,
-		};
-		history.push(location);
+		history.push(`game?code=${gameCode}`);
 	};
 
 	return (
@@ -34,13 +31,15 @@ function Home() {
 				title="TicTacToe"
 				subtitle="The simple TicTacToe game you have been looking for..."
 			/>
-			<button style={buttonStyle("#0654be")} onClick={createGame}>
-				Start Game
-			</button>
+			<div>
+				<button style={buttonStyle("#0654be")} onClick={createGame}>
+					Start Game
+				</button>
 
-			<Link to="/joinGame">
-				<button style={buttonStyle("#f4701a")}>Join Game</button>
-			</Link>
+				<Link to="/joinGame">
+					<button style={buttonStyle("#f4701a")}>Join Game</button>
+				</Link>
+			</div>
 		</div>
 	);
 }

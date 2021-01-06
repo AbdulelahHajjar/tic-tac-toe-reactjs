@@ -15,13 +15,8 @@ function JoinGame() {
 			.where("code", "==", gameCode)
 			.get()
 			.then((querySnapshot) => {
-				if (
-					querySnapshot != null &&
-					querySnapshot.size > 0 &&
-					querySnapshot.docs[0] != null &&
-					querySnapshot.docs[0].exists
-					/* // TODO: && either x or o is null. */
-				) {
+				// TODO: and (x or o equal to null)
+				if (querySnapshot != null && querySnapshot.size > 0) {
 					redirectToGame(gameCode);
 				} else {
 					// TODO: display error
@@ -35,10 +30,7 @@ function JoinGame() {
 
 	// TODO: redundant code
 	const redirectToGame = (gameCode) => {
-		const location = {
-			pathname: `game?code=${gameCode}`,
-		};
-		history.push(location);
+		history.push(`game?code=${gameCode}`);
 	};
 
 	return (
