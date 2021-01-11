@@ -45,6 +45,11 @@ export default class GameObject {
 		else if (this.o == null) this.o = uid;
 	}
 
+	isTie() {
+		let existsEmptySquare = this.board.findIndex((sq) => sq == null) !== -1;
+		return !this.winner && !existsEmptySquare;
+	}
+
 	existsWinner() {
 		const lines = [
 			[0, 1, 2],
@@ -72,6 +77,10 @@ export default class GameObject {
 
 	getPlayerID(player) {
 		return player === "x" ? this.x : this.o;
+	}
+
+	getPlayer(id) {
+		return id === this.x ? "x" : "o";
 	}
 
 	loser() {

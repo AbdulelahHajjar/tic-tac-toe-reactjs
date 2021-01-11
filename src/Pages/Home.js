@@ -31,7 +31,7 @@ function Home() {
 			<div style={containerStyle}>
 				<Header
 					title="TicTacToe"
-					subtitle="The simple TicTacToe game you have been looking for..."
+					subtitle="A simple TicTacToe game ..."
 				/>
 				<div>
 					<button style={buttonStyle("#0654be")} onClick={createGame}>
@@ -56,6 +56,8 @@ const containerStyle = {
 	justifyContent: "center",
 	alignItems: "center",
 	height: "100vh",
+	backgroundColor: "#0d1019",
+	color: "white",
 };
 
 function buttonStyle(bgColor) {

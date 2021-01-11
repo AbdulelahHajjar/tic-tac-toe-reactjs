@@ -11,6 +11,7 @@ import Dialog from "../Components/Dialog";
 import winnerIcon from "../images/winner-icon.svg";
 import loserIcon from "../images/loser-icon.svg";
 import informationIcon from "../images/information-icon.svg";
+import tieGameIcon from "../images/tie-game-icon.svg";
 
 var gameListener = null;
 const uid = uuidv4();
@@ -91,17 +92,24 @@ function Game() {
 
 	const endGameDialog = () => {
 		const isWinner = game.getPlayerID(game.winner) === uid;
+		const isTieGame = game.isTie();
 
 		return (
 			<Dialog
-				icon={isWinner ? winnerIcon : loserIcon}
+				icon={
+					isTieGame ? tieGameIcon : isWinner ? winnerIcon : loserIcon
+				}
 				title={
-					isWinner
+					isTieGame
+						? "Tie"
+						: isWinner
 						? `Congratulations, ${game.winner.toUpperCase()}!`
 						: `Hard luck, ${game.loser().toUpperCase()}`
 				}
 				subtitle={
-					isWinner
+					isTieGame
+						? "It's a tie"
+						: isWinner
 						? "You won this match!"
 						: "You lost this match, but you can always play again!"
 				}
@@ -118,30 +126,37 @@ function Game() {
 	};
 
 	return (
-		<div>
-			{game && game.winner && endGameDialog()}
+		<div style={{ backgroundColor: "#0d1019", height: "100vh" }}>
 			{prompt && promptDialog()}
-			<div
-				style={{
-					display: "flex",
-					alignItems: "center",
-					justifyContent: "center",
-					height: "100vh",
-					backgroundColor: "#0d1019",
-				}}
-			>
-				<div>
-					<div
-						style={{
-							width: "600px",
-							height: "600px",
-							display: "grid",
-							gridTemplateColumns: "auto auto auto",
-							gridGap: "4px",
-						}}
-					>
-						{game &&
-							game.board.map((square, index) => {
+			{game && (game.isTie() || game.winner) && endGameDialog()}
+			{game && (
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						height: "100vh",
+						flexDirection: "column",
+						color: "white",
+					}}
+				>
+					<h1>You are: {game.getPlayer(uid).toUpperCase()}</h1>
+					<h2>
+						{game.currentPlayer === game.getPlayer(uid)
+							? "It is your turn!"
+							: "Waiting for your turn..."}
+					</h2>
+					<div>
+						<div
+							style={{
+								width: "600px",
+								height: "600px",
+								display: "grid",
+								gridTemplateColumns: "auto auto auto",
+								gridGap: "4px",
+							}}
+						>
+							{game.board.map((square, index) => {
 								return (
 									<Square
 										key={index}
@@ -155,9 +170,10 @@ function Game() {
 									/>
 								);
 							})}
+						</div>
 					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }
