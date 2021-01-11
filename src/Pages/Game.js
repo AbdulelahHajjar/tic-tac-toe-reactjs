@@ -39,7 +39,6 @@ function Game() {
 		if (gameListener) return;
 		gameListener = gamesRef.where("code", "==", code);
 		if (game == null) gameListener.where("winner", "==", null);
-
 		gameListener.onSnapshot((querySnapshot) => {
 			if (querySnapshot != null && querySnapshot.size > 0) {
 				let doc = querySnapshot.docs[0];
@@ -54,7 +53,7 @@ function Game() {
 				);
 				setUpGame(gameObj);
 			} else {
-				setPrompt("Error: Cannot get game.");
+				setPrompt("Error: Game does not exist.");
 			}
 		});
 	};

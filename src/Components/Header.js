@@ -1,6 +1,12 @@
 function Header(props) {
 	return (
-		<div style={{}}>
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "center",
+			}}
+		>
 			<h1 style={titleStyle}>{props.title}</h1>
 			<p style={subTitleStyle}>{props.subtitle}</p>
 		</div>

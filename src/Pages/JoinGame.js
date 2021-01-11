@@ -15,13 +15,8 @@ function JoinGame() {
 			.where("code", "==", gameCode)
 			.where("winner", "==", null)
 			.get()
-			.then((querySnapshot) => {
-				// TODO: and (x or o equal to null)
-				if (querySnapshot != null && querySnapshot.size > 0) {
-					redirectToGame(gameCode);
-				} else {
-					// TODO: display error
-				}
+			.then(() => {
+				redirectToGame(gameCode);
 			});
 	}
 
@@ -80,8 +75,12 @@ function buttonStyle(bgColor) {
 
 const containerStyle = {
 	display: "flex",
-	textAlign: "center",
+	alignItems: "center",
+	justifyContent: "center",
 	flexDirection: "column",
+	backgroundColor: "#0d1019",
+	height: "100vh",
+	color: "white",
 };
 
 export default JoinGame;
