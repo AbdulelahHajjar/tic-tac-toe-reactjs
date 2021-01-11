@@ -10,6 +10,7 @@ import Dialog from "../Components/Dialog";
 
 import winnerIcon from "../images/winner-icon.svg";
 import loserIcon from "../images/loser-icon.svg";
+import informationIcon from "../images/information-icon.svg";
 
 var gameListener = null;
 const uid = uuidv4();
@@ -17,8 +18,7 @@ const uid = uuidv4();
 function Game() {
 	const gamesRef = firebase.firestore().collection("games");
 	const [game, setGame] = useState(null);
-	const [error, setError] = useState("");
-	const [prompt, setPrompt] = useState("");
+	const [prompt, setPrompt] = useState("Loading game...");
 	const history = useHistory();
 	// var uid = localStorage.getItem("uid");
 
@@ -53,7 +53,7 @@ function Game() {
 				);
 				setUpGame(gameObj);
 			} else {
-				setError("Error: cannot get game.");
+				setPrompt("Error: Cannot get game.");
 			}
 		});
 	};
@@ -69,21 +69,17 @@ function Game() {
 	const setUpGame = (gameObj) => {
 		if (gameObj.isContestant(uid)) {
 			if (gameObj.x == null || gameObj.o == null) {
-				setPrompt("Waiting for other contestant...");
+				setPrompt(`Game Code: ${gameObj.code}`);
 			} else {
-				if (gameObj.winner) {
-					setPrompt(
-						gameObj.winner ? gameObj.winner + " Won!!!" : null
-					);
-				}
 				setGame(gameObj);
-				setError(null);
+				setPrompt(null);
 			}
 		} else if (gameObj.newContestantCanJoin()) {
+			setPrompt("Joining game...");
 			gameObj.addContestant(uid);
 			gamesRef.doc(gameObj.id).withConverter(gameConverter).set(gameObj);
 		} else {
-			setError("Error: full lobby.");
+			setPrompt("Error: Full game.");
 		}
 	};
 
@@ -101,8 +97,8 @@ function Game() {
 				icon={isWinner ? winnerIcon : loserIcon}
 				title={
 					isWinner
-						? `Congratulations, ${game.winner}!`
-						: `Hard luck, ${game.loser()}`
+						? `Congratulations, ${game.winner.toUpperCase()}!`
+						: `Hard luck, ${game.loser().toUpperCase()}`
 				}
 				subtitle={
 					isWinner
@@ -117,36 +113,53 @@ function Game() {
 		);
 	};
 
-	if (game != null) {
-		return (
-			<React.Fragment>
-				{game.winner && endGameDialog()}
+	const promptDialog = () => {
+		return <Dialog icon={informationIcon} title={prompt} />;
+	};
+
+	return (
+		<div>
+			{game && game.winner && endGameDialog()}
+			{prompt && promptDialog()}
+			<div
+				style={{
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					height: "100vh",
+					backgroundColor: "#0d1019",
+				}}
+			>
 				<div>
-					<div style={{ width: "600px" }}>
-						{game.board.map((square, index) => {
-							return (
-								<Square
-									key={index}
-									index={index}
-									player={square}
-									makePlay={makePlay}
-								/>
-							);
-						})}
+					<div
+						style={{
+							width: "600px",
+							height: "600px",
+							display: "grid",
+							gridTemplateColumns: "auto auto auto",
+							gridGap: "4px",
+						}}
+					>
+						{game &&
+							game.board.map((square, index) => {
+								return (
+									<Square
+										key={index}
+										index={index}
+										player={
+											square == null
+												? null
+												: square.toUpperCase()
+										}
+										makePlay={makePlay}
+									/>
+								);
+							})}
 					</div>
-					<p>{prompt}</p>
-					<p>{error}</p>
 				</div>
-			</React.Fragment>
-		);
-	} else {
-		return (
-			<div>
-				<p>{prompt}</p>
-				<p>{error}</p>
 			</div>
-		);
-	}
+		</div>
+	);
 }
 
 // const containerStyle = {

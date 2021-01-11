@@ -7,12 +7,19 @@ function Dialog(props) {
 					<img src={props.icon} alt="" />
 					<h2>{props.title}</h2>
 				</div>
-				<p style={dialogTextStyle}>{props.subtitle}</p>
-				<div>
-					<button style={buttonStyle()} onClick={props.buttonOnClick}>
-						{props.buttonText}
-					</button>
-				</div>
+				{props.subtitle && (
+					<p style={dialogTextStyle}>{props.subtitle}</p>
+				)}
+				{props.buttonOnClick && props.buttonText && (
+					<div>
+						<button
+							style={buttonStyle()}
+							onClick={props.buttonOnClick}
+						>
+							{props.buttonText}
+						</button>
+					</div>
+				)}
 			</div>
 		</div>
 	);
