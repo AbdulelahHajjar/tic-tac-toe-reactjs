@@ -5,6 +5,7 @@ import "firebase/firestore";
 import firebase from "firebase/app";
 import { Link } from "react-router-dom";
 import GameObject, { gameConverter } from "../Models/GameObject.js";
+import Dialog from "../Components/Dialog";
 
 function Home() {
 	const history = useHistory();
@@ -27,21 +28,25 @@ function Home() {
 	};
 
 	return (
-		<div style={containerStyle}>
-			<Header
-				title="TicTacToe"
-				subtitle="The simple TicTacToe game you have been looking for..."
-			/>
-			<div>
-				<button style={buttonStyle("#0654be")} onClick={createGame}>
-					Start Game
-				</button>
+		<React.Fragment>
+			<div style={containerStyle}>
+				<Header
+					title="TicTacToe"
+					subtitle="The simple TicTacToe game you have been looking for..."
+				/>
+				<div>
+					<button style={buttonStyle("#0654be")} onClick={createGame}>
+						Start Game
+					</button>
 
-				<Link to="/joinGame">
-					<button style={buttonStyle("#f4701a")}>Join Game</button>
-				</Link>
+					<Link to="/joinGame">
+						<button style={buttonStyle("#f4701a")}>
+							Join Game
+						</button>
+					</Link>
+				</div>
 			</div>
-		</div>
+		</React.Fragment>
 	);
 }
 
@@ -49,6 +54,9 @@ const containerStyle = {
 	display: "flex",
 	textAlign: "center",
 	flexDirection: "column",
+	justifyContent: "center",
+	alignItems: "center",
+	height: "100vh",
 };
 
 function buttonStyle(bgColor) {

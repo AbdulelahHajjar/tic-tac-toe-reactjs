@@ -1,13 +1,17 @@
-import Header from "../Components/Header";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import firebase from "firebase/app";
 import "firebase/firestore";
 import Square from "../Components/Square";
 import GameObject, { gameConverter } from "../Models/GameObject";
 import { v4 as uuidv4 } from "uuid";
+import React from "react";
+import Dialog from "../Components/Dialog";
 
-var listener = null;
+import winnerIcon from "../images/winner-icon.svg";
+import loserIcon from "../images/loser-icon.svg";
+
+var gameListener = null;
 const uid = uuidv4();
 
 function Game() {
@@ -15,7 +19,7 @@ function Game() {
 	const [game, setGame] = useState(null);
 	const [error, setError] = useState("");
 	const [prompt, setPrompt] = useState("");
-
+	const history = useHistory();
 	// var uid = localStorage.getItem("uid");
 
 	// if (uid == null) {
@@ -31,11 +35,11 @@ function Game() {
 
 	const attachGameListener = () => {
 		// TODO: firestore sequrity rules
-		if (listener) return;
-		listener = gamesRef.where("code", "==", code);
-		if (game == null) listener.where("winner", "==", null);
+		if (gameListener) return;
+		gameListener = gamesRef.where("code", "==", code);
+		if (game == null) gameListener.where("winner", "==", null);
 
-		listener.onSnapshot((querySnapshot) => {
+		gameListener.onSnapshot((querySnapshot) => {
 			if (querySnapshot != null && querySnapshot.size > 0) {
 				let doc = querySnapshot.docs[0];
 				let gameObj = new GameObject(
@@ -67,7 +71,11 @@ function Game() {
 			if (gameObj.x == null || gameObj.o == null) {
 				setPrompt("Waiting for other contestant...");
 			} else {
-				setPrompt(gameObj.winner ? gameObj.winner + " Won!!!" : null);
+				if (gameObj.winner) {
+					setPrompt(
+						gameObj.winner ? gameObj.winner + " Won!!!" : null
+					);
+				}
 				setGame(gameObj);
 				setError(null);
 			}
@@ -85,30 +93,55 @@ function Game() {
 		gamesRef.doc(game.id).withConverter(gameConverter).set(game);
 	};
 
-	// TODO: Fix blank screen on first launch of this page
-	if (prompt == null && error == null && game != null) {
+	const endGameDialog = () => {
+		const isWinner = game.getPlayerID(game.winner) === uid;
+
 		return (
-			<div style={{ width: "600px" }}>
-				{game.board.map((square, index) => {
-					return (
-						<Square
-							key={index}
-							index={index}
-							player={square}
-							makePlay={makePlay}
-						/>
-					);
-				})}
-			</div>
+			<Dialog
+				icon={isWinner ? winnerIcon : loserIcon}
+				title={
+					isWinner
+						? `Congratulations, ${game.winner}!`
+						: `Hard luck, ${game.loser()}`
+				}
+				subtitle={
+					isWinner
+						? "You won this match!"
+						: "You lost this match, but you can always play again!"
+				}
+				buttonText={"Done"}
+				buttonOnClick={() => {
+					history.push(`/`);
+				}}
+			/>
+		);
+	};
+
+	if (game != null) {
+		return (
+			<React.Fragment>
+				{game.winner && endGameDialog()}
+				<div>
+					<div style={{ width: "600px" }}>
+						{game.board.map((square, index) => {
+							return (
+								<Square
+									key={index}
+									index={index}
+									player={square}
+									makePlay={makePlay}
+								/>
+							);
+						})}
+					</div>
+					<p>{prompt}</p>
+					<p>{error}</p>
+				</div>
+			</React.Fragment>
 		);
 	} else {
 		return (
-			<div style={containerStyle}>
-				<Header
-					title="Waiting for contenstant to join..."
-					subtitle={`Game code is ${code}`}
-				/>
-
+			<div>
 				<p>{prompt}</p>
 				<p>{error}</p>
 			</div>
@@ -116,10 +149,10 @@ function Game() {
 	}
 }
 
-const containerStyle = {
-	display: "flex",
-	textAlign: "center",
-	flexDirection: "column",
-};
+// const containerStyle = {
+// 	display: "flex",
+// 	textAlign: "center",
+// 	flexDirection: "column",
+// };
 
 export default Game;

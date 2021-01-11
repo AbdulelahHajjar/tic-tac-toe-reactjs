@@ -70,6 +70,14 @@ export default class GameObject {
 		return null;
 	}
 
+	getPlayerID(player) {
+		return player === "x" ? this.x : this.o;
+	}
+
+	loser() {
+		return this.winner == null ? null : this.winner === "x" ? "o" : "x";
+	}
+
 	static create() {
 		return new GameObject(
 			null,
